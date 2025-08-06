@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Checkout from GitHub') {
             steps {
-                git credentialsId: 'github-creds', url: 'https://github.com/YOUR_USERNAME/your-terraform-ec2-pipeline.git', branch: 'main'
+                git credentialsId: 'github-creds', url: 'https://github.com/Shravya-Devtools/EC2.git', branch: 'master'
             }
         }
 
