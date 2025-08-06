@@ -16,33 +16,43 @@ pipeline {
             }
         }
 
-        stage('Setup AWS Credentials') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'aws-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    echo 'AWS credentials injected'
-                }
-            }
-        }
-
         stage('Terraform Init') {
             steps {
-                sh 'terraform init'
+                withCredentials([usernamePassword(
+                    credentialsId: 'aws-creds',
+                    usernameVariable: 'AWS_ACCESS_KEY_ID',
+                    passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                )]) {
+                    sh 'terraform init'
+                }
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                sh 'terraform plan -out=tfplan'
-                sh 'terraform show -no-color tfplan > tfplan.txt'
+                withCredentials([usernamePassword(
+                    credentialsId: 'aws-creds',
+                    usernameVariable: 'AWS_ACCESS_KEY_ID',
+                    passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                )]) {
+                    sh 'terraform plan -out=tfplan'
+                    sh 'terraform show -no-color tfplan > tfplan.txt'
+                }
             }
         }
 
         stage('Terraform Apply/Destroy') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'aws-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                withCredentials([usernamePassword(
+                    credentialsId: 'aws-creds',
+                    usernameVariable: 'AWS_ACCESS_KEY_ID',
+                    passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                )]) {
                     script {
                         if (params.action == 'apply') {
-                            input message: 'Apply the Terraform plan?', parameters: [text(name: 'Plan Preview', defaultValue: readFile('tfplan.txt'))]
+                            input message: 'Apply the Terraform plan?', parameters: [
+                                text(name: 'Plan Preview', defaultValue: readFile('tfplan.txt'))
+                            ]
                             sh 'terraform apply -auto-approve tfplan'
                         } else if (params.action == 'destroy') {
                             input message: 'Destroy resources?'
