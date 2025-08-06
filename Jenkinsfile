@@ -48,12 +48,8 @@ pipeline {
                     usernameVariable: 'AWS_ACCESS_KEY_ID',
                     passwordVariable: 'AWS_SECRET_ACCESS_KEY'
                 )]) {
-                    script {
-                        input message: 'Proceed to apply the Terraform plan?', parameters: [
-                            text(name: 'Plan Preview', defaultValue: readFile('tfplan.txt'))
-                        ]
-                        sh 'terraform apply -auto-approve tfplan'
-                    }
+                    // No input step, apply automatically
+                    sh 'terraform apply -auto-approve tfplan'
                 }
             }
         }
