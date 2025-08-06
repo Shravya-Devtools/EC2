@@ -6,7 +6,7 @@ pipeline {
     }
 
     parameters {
-        choice(name: 'action', choices: ['apply', 'destroy'], description: 'Terraform action to perform')
+        string(name: 'action', defaultValue: 'apply', description: 'Terraform action to perform (apply only)')
     }
 
     stages {
@@ -41,7 +41,7 @@ pipeline {
             }
         }
 
-        stage('Terraform Apply/Destroy') {
+        stage('Terraform Apply') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'aws-creds',
@@ -49,15 +49,10 @@ pipeline {
                     passwordVariable: 'AWS_SECRET_ACCESS_KEY'
                 )]) {
                     script {
-                        if (params.action == 'apply') {
-                            input message: 'Apply the Terraform plan?', parameters: [
-                                text(name: 'Plan Preview', defaultValue: readFile('tfplan.txt'))
-                            ]
-                            sh 'terraform apply -auto-approve tfplan'
-                        } else if (params.action == 'destroy') {
-                            input message: 'Destroy resources?'
-                            sh 'terraform destroy -auto-approve'
-                        }
+                        input message: 'Proceed to apply the Terraform plan?', parameters: [
+                            text(name: 'Plan Preview', defaultValue: readFile('tfplan.txt'))
+                        ]
+                        sh 'terraform apply -auto-approve tfplan'
                     }
                 }
             }
